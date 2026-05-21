@@ -1,6 +1,38 @@
 const router = require('express').Router();
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const pool = require('../db');
 const { authenticate, requireRole } = require('../middleware/auth');
+
+const uploadsDir = path.join(__dirname, '../../uploads/emblems');
+fs.mkdirSync(uploadsDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `emblem-${req.user.id}-${Date.now()}${ext}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    if (allowed.includes(path.extname(file.originalname).toLowerCase())) cb(null, true);
+    else cb(new Error('이미지 파일만 업로드할 수 있습니다 (jpg, png, gif, webp, svg)'));
+  },
+});
+
+router.post('/upload-emblem', authenticate, requireRole('club_manager'), (req, res, next) => {
+  upload.single('emblem')(req, res, err => {
+    if (err) return res.status(400).json({ error: err.message });
+    if (!req.file) return res.status(400).json({ error: '파일이 없습니다' });
+    res.json({ url: `/uploads/emblems/${req.file.filename}` });
+  });
+});
 
 router.get('/', async (req, res) => {
   try {

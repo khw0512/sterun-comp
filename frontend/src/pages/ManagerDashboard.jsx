@@ -27,6 +27,8 @@ export default function ManagerDashboard() {
   const [editingClub, setEditingClub] = useState(false);
   const [clubSaving, setClubSaving] = useState(false);
   const [clubMsg, setClubMsg] = useState('');
+  const [emblemFile, setEmblemFile] = useState(null);
+  const [emblemPreview, setEmblemPreview] = useState('');
 
   const [showEventForm, setShowEventForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
@@ -42,6 +44,7 @@ export default function ManagerDashboard() {
       setClub(data);
       if (data) {
         setClubForm({ name: data.name, description: data.description || '', location: data.location || '', image_url: data.image_url || '' });
+        setEmblemPreview(data.image_url || '');
         loadEvents(data.id);
       }
     } finally { setLoadingClub(false); }
@@ -63,18 +66,37 @@ export default function ManagerDashboard() {
     if (!registrations[eventId]) await loadRegistrations(eventId);
   };
 
+  const handleEmblemChange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setEmblemFile(file);
+    setEmblemPreview(URL.createObjectURL(file));
+  };
+
   const saveClub = async e => {
     e.preventDefault();
     setClubSaving(true); setClubMsg('');
     try {
+      let formData = { ...clubForm };
+      if (emblemFile) {
+        const fd = new FormData();
+        fd.append('emblem', emblemFile);
+        const { data: uploaded } = await api.post('/clubs/upload-emblem', fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        formData.image_url = uploaded.url;
+      }
       if (club) {
-        const { data } = await api.put(`/clubs/${club.id}`, clubForm);
+        const { data } = await api.put(`/clubs/${club.id}`, formData);
         setClub(data);
+        setClubForm(f => ({ ...f, image_url: data.image_url || '' }));
+        setEmblemFile(null);
         setClubMsg('저장되었습니다');
         setEditingClub(false);
       } else {
-        const { data } = await api.post('/clubs', clubForm);
+        const { data } = await api.post('/clubs', formData);
         setClub(data);
+        setEmblemFile(null);
         setClubMsg('클럽이 생성되었습니다!');
         setEditingClub(false);
       }
@@ -160,6 +182,14 @@ export default function ManagerDashboard() {
               {clubMsg && <div className={`alert ${clubMsg.includes('오류') ? 'alert-error' : 'alert-success'}`}>{clubMsg}</div>}
               {club && !editingClub ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {club.image_url && (
+                    <div>
+                      <strong>엠블럼</strong>
+                      <div style={{ marginTop: 6 }}>
+                        <img src={club.image_url} alt="클럽 엠블럼" style={{ width: 80, height: 80, objectFit: 'contain', borderRadius: 8, border: '1px solid var(--border)' }} />
+                      </div>
+                    </div>
+                  )}
                   <div><strong>클럽명</strong><p style={{ marginTop: 2 }}>{club.name}</p></div>
                   <div><strong>소개</strong><p style={{ marginTop: 2, color: 'var(--muted)', whiteSpace: 'pre-wrap' }}>{club.description || '—'}</p></div>
                   <div><strong>위치</strong><p style={{ marginTop: 2 }}>{club.location || '—'}</p></div>
@@ -177,6 +207,16 @@ export default function ManagerDashboard() {
                   <div className="form-group">
                     <label className="form-label">주요 활동 지역</label>
                     <input className="form-control" placeholder="예: 서울 한강공원" value={clubForm.location} onChange={e => setClubForm(f => ({ ...f, location: e.target.value }))} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">클럽 엠블럼</label>
+                    {emblemPreview && (
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        <img src={emblemPreview} alt="엠블럼 미리보기" style={{ width: 80, height: 80, objectFit: 'contain', borderRadius: 8, border: '1px solid var(--border)' }} />
+                      </div>
+                    )}
+                    <input type="file" accept="image/*" className="form-control" onChange={handleEmblemChange} />
+                    <small style={{ color: 'var(--muted)' }}>JPG, PNG, GIF, WebP, SVG · 최대 5MB</small>
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button type="submit" className="btn btn-primary" disabled={clubSaving}>{clubSaving ? '저장 중...' : club ? '저장' : '클럽 생성'}</button>
