@@ -46,6 +46,7 @@ export default function Navbar() {
         {/* 데스크탑 nav */}
         <div className="navbar-nav">
           <NavLink to="/" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`} end>이벤트</NavLink>
+          <NavLink to="/marathons" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>마라톤</NavLink>
           {user ? (
             <>
               <NavLink
@@ -85,6 +86,7 @@ export default function Navbar() {
       {menuOpen && (
         <div className="navbar-mobile-menu">
           <NavLink to="/" className="mobile-nav-link" end>🏃 이벤트</NavLink>
+          <NavLink to="/marathons" className="mobile-nav-link">🏅 마라톤</NavLink>
           {user ? (
             <>
               <NavLink

@@ -12,6 +12,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/clubs', require('./routes/clubs'));
 app.use('/api/events', require('./routes/events'));
 app.use('/api/registrations', require('./routes/registrations'));
+app.use('/api/marathons', require('./routes/marathons'));
 app.use('/api/notifications', require('./routes/notifications'));
 
 app.use((err, req, res, next) => {

@@ -209,6 +209,8 @@ select.form-control { cursor: pointer; }
 .badge-approved { background: #dcfce7; color: #166534; }
 .badge-rejected { background: #fee2e2; color: #991b1b; }
 .badge-info { background: #dbeafe; color: #1e40af; }
+.badge-domestic { background: #dcfce7; color: #166534; }
+.badge-intl { background: #fef3c7; color: #92400e; }
 
 /* Tabs */
 .tab-list { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; gap: 0.25rem; }

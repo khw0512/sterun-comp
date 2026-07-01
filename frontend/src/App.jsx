@@ -4,6 +4,8 @@ import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
 import EventListPage from './pages/EventListPage';
 import EventDetailPage from './pages/EventDetailPage';
+import MarathonListPage from './pages/MarathonListPage';
+import MarathonDetailPage from './pages/MarathonDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ManagerDashboard from './pages/ManagerDashboard';
@@ -25,6 +27,8 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/events/:id" element={<EventDetailPage />} />
+        <Route path="/marathons" element={<MarathonListPage />} />
+        <Route path="/marathons/:id" element={<MarathonDetailPage />} />
         <Route path="/dashboard" element={<DashboardRedirect />} />
         <Route path="/manager" element={
           <PrivateRoute role="club_manager"><ManagerDashboard /></PrivateRoute>

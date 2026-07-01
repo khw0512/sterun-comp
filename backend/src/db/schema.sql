@@ -52,7 +52,42 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at      TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS marathons (
+  id            SERIAL PRIMARY KEY,
+  creator_id    INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  name          VARCHAR(255) NOT NULL,
+  is_domestic   BOOLEAN NOT NULL DEFAULT TRUE,
+  country       VARCHAR(100) NOT NULL,
+  city          VARCHAR(255),
+  marathon_date DATE NOT NULL,
+  description   TEXT,
+  website_url   VARCHAR(500),
+  created_at    TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS marathon_categories (
+  id          SERIAL PRIMARY KEY,
+  marathon_id INTEGER REFERENCES marathons(id) ON DELETE CASCADE,
+  name        VARCHAR(100) NOT NULL,
+  distance_km NUMERIC(6,2),
+  created_at  TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS marathon_participants (
+  id          SERIAL PRIMARY KEY,
+  marathon_id INTEGER REFERENCES marathons(id) ON DELETE CASCADE,
+  category_id INTEGER REFERENCES marathon_categories(id) ON DELETE CASCADE,
+  user_id     INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  message     TEXT,
+  created_at  TIMESTAMP DEFAULT NOW(),
+  UNIQUE (marathon_id, user_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_events_club_id ON events(club_id);
 CREATE INDEX IF NOT EXISTS idx_registrations_event_id ON registrations(event_id);
 CREATE INDEX IF NOT EXISTS idx_registrations_guest_id ON registrations(guest_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_marathon_categories_marathon_id ON marathon_categories(marathon_id);
+CREATE INDEX IF NOT EXISTS idx_marathon_participants_marathon_id ON marathon_participants(marathon_id);
+CREATE INDEX IF NOT EXISTS idx_marathon_participants_category_id ON marathon_participants(category_id);
+CREATE INDEX IF NOT EXISTS idx_marathon_participants_user_id ON marathon_participants(user_id);
